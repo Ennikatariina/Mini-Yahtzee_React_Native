@@ -38,7 +38,7 @@ export default function Gameboard({navigation, route}){
         },[])
 
     //Kun selectedDicePoints tila muuttuu, niin seuraavat toiminnot tehdään
-    //Muunnmuassa laskee kokoispisteet ja pisteet boonuspisteisiin ja lisää +50 bonuspistettä.
+    //Muunmuassa laskee kokonaispisteet ja pisteet bonuspisteisiin ja lisää +50 bonuspistettä.
     useEffect(()=>{
         console.log("1 useEffect")
         setNbrOfThrowsLeft(NBR_OF_THROWS)
