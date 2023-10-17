@@ -74,6 +74,11 @@ export default StyleSheet.create({
     color:"#2B2B52",
     fontSize: 20
   },
+  buttonGroup: {
+    flexDirection: 'row', // Aseta komponentit vaakasuoraan riviin
+    justifyContent: 'space-between', // Jakaa tilan komponenttien välillä
+    alignItems: 'center', // Keskitä komponentit pystysuunnassa
+  },
   textInputStyle:{
     width: '80%', 
     borderColor: 'gray',

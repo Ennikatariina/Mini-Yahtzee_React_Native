@@ -1,11 +1,3 @@
-import { useState, useEffect, useRef } from "react";
-import { Text, View, Pressable, Button } from "react-native";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import styles from '../style/style'
-import Footer from './Footer';
-import Header from './Header';
-import { NBR_OF_DICES, NBR_OF_THROWS, MIN_SPOT, MAX_SPOT, BONUS_POINTS_LIMIT, BONUS_POINTS } from "../constants/Game";
-import { Container, Row, Col } from 'react-native-flex-grid';
 
 let board=[]
 
@@ -28,8 +20,6 @@ export default function Gameboard({navigation, route}){
     //Kerätyt pisteet (Yhdelle numerolle/pistemäärälle?)
     const[dicePointsTotal, setDicePointsTotal]=
         useState(new Array(MAX_SPOT).fill(0))
-    const [bonusPointText, setBonusPointText]=useState(`You are ${BONUS_POINTS_LIMIT} points away from bonus`)
-    const[totalPoints, setTotalPoints]=useState(0)
 
     //Asetetaan nimi playerName tilaan, kun Gameboard renderoidaan ensimäisen kerran. 
     useEffect(()=>{
@@ -39,31 +29,15 @@ export default function Gameboard({navigation, route}){
         },[])
 
     //Kun selectedDicePoints tila muuttuu, niin seuraavat toiminnot tehdään
-    //Muunnmuassa laskee kokoispisteet ja pisteet boonuspisteisiin ja lisää +50 bonuspistettä.
     useEffect(()=>{
         setNbrOfThrowsLeft(NBR_OF_THROWS)
         selectedDices.fill(false)
-        setStatus('Throw dices')
-        let totalPointsCounter = dicePointsTotal.reduce((sum, point)=>sum + point, 0)
-        let pointsMissing= BONUS_POINTS_LIMIT - totalPointsCounter
-        if (pointsMissing > 0) {
-            setTotalPoints(totalPointsCounter)
-            setBonusPointText(`You are ${pointsMissing} points away from bonus`);
-        }
-        else{
-            const newTotalPoints = totalPointsCounter + BONUS_POINTS;
-            setTotalPoints(newTotalPoints)
-            setBonusPointText(`Congrats! Bonus points (50) added`);
-        }
-        },[selectedDicePoints])
+        setStatus('Select and throw dices again') 
+        console.log("useEffect " +selectedDicePoints )
         
-        //Päivittää statuksen, kun gameEndStatuksen arvo on true ja gameEndStatukseen tulee muutos
-    useEffect(() => {
-        if (gameEndStatus) {
-            setStatus("Game over")
-            }
-        },[gameEndStatus])
+        },[selectedDicePoints])
 
+ 
     //Nopparivi 
     const dicesRow=[]
     for (let dice=0; dice< NBR_OF_DICES; dice++){
@@ -114,41 +88,65 @@ export default function Gameboard({navigation, route}){
         )
     }
   
+    // Luo Ref gameEndStatus-tilalle
+  const gameEndStatusRef = useRef(false);
+
+  // Aseta Ref gameEndStatusin arvoksi gameEndStatus-tila alussa
+  useEffect(() => {
+    gameEndStatusRef.current = gameEndStatus;
+    console.log("ref useE " +gameEndStatus)
+  }, [gameEndStatus]);
+
+  // Päivitä gameEndStatus Ref:n kautta
+  const updateGameEndStatus = (value) => {
+    gameEndStatusRef.current = value;
+    console.log(" updateGameEndStatus ")
+  };
+
     const selectDicePoints=(i)=>{
         //Jos heittoja ei ole jäljellä 
         if(nbrOfThrowsLeft===0){
                 // Jotkut pisteet puuttuvat
                 let selectedPoints =[...selectedDicePoints] //tämän lista arvot false/true
                 let points =[...dicePointsTotal] 
-                //Jos kyseissen numeron pisteitä ei ole valittu (Jos selectedPoints[i] false niin if tehdään)
+                //Jos kyseissen numeron pisteitä ei ole valittu
+                //Jos selectedPoints[i] false niin if tehdään
                 if(!selectedPoints[i]){
                     selectedPoints[i]=true
                     //Kuinka paljon nopparivilla on niitä noppia, joissa on käyttäjän pisteiksi valitut nopat
                     let nbrOfDices = diceSpots.reduce((total, x)=>(x===(i+1) ? total +1 : total ),0)
                     points[i]=nbrOfDices * (i + 1) 
+
+                    const allPointsSelected = selectedPoints.every((pointSelected) => pointSelected);
+                    //console.log("allPointsSelected "+allPointsSelected)
+                    if (allPointsSelected) {
+                        setGameEndStatus(true)
+                        updateGameEndStatus(true);
+                    }
+
                 }
                 //Jos yrittää valita toisen kerran saman numeron pisteet. 
                 else{
                     setStatus('You already selected points for ' + (i+1))
                     return points[i]
                 }
-                const allPointsSelected = selectedPoints.every((pointSelected) => pointSelected);
-                    if (allPointsSelected) {
-                        setGameEndStatus(true)
-                    }
                 setDicePointsTotal(points)
                 setSelectedDicePoints(selectedPoints)
-                return points[i]   
+                //console.log(" funktiossa 2" + selectedDicePoints);
+                console.log(gameEndStatus)
+              
+                return points[i]
+            
         }
         //Heittoja on jäljellä
         else{
             setStatus('Throw ' + NBR_OF_THROWS + ' times before setting points')
-        }    
+        }
     }
 
     //Heitetään noppaa
     const throwDices = () =>{
-        console.log("throwDices "+ nbrOfThrowsLeft + " "+ gameEndStatus )
+        console.log("throwDices "+ nbrOfThrowsLeft + gameEndStatus )
         //3 heittoa mennyt, mutta peli ei ole loppu
         if (nbrOfThrowsLeft===0 && !gameEndStatus){
             setStatus('Select your points before the next throw')
@@ -160,24 +158,22 @@ export default function Gameboard({navigation, route}){
             diceSpots.fill(0) 
             dicePointsTotal.fill(0) 
             setStatus("Game over")
-        }
-        else if(nbrOfThrowsLeft===1){
-            setStatus("Select your points before next throw ")
-        }
-        else{
-            let spots= [...diceSpots]
-            for (let i=0; i<NBR_OF_DICES; i++){
-                //Heitetään niitä noppia, joilla selectedDices arvon on false, eli jos noppaa ei ole kiinnitetty
-                if(!selectedDices[i]){
-                    let randonNumber = Math.floor(Math.random()* 6+1)
-                    board[i]='dice-'+ randonNumber
-                    spots[i]=randonNumber
-                }
+            console.log("Menee tänne")
+        }else{
+        
+        let spots= [...diceSpots]
+        for (let i=0; i<NBR_OF_DICES; i++){
+            //Heitetään niitä noppia, joilla selectedDices arvon on false, eli jos noppaa ei ole kiinnitetty
+            if(!selectedDices[i]){
+                let randonNumber = Math.floor(Math.random()* 6+1)
+                board[i]='dice-'+ randonNumber
+                spots[i]=randonNumber
             }
-            setDiceSpots(spots)
-            setStatus('Select and throw dices again')
         }
         setNbrOfThrowsLeft(nbrOfThrowsLeft-1)
+        setDiceSpots(spots)
+        setStatus('Select and throw dices again')
+        }
     }
 
     function getSpotTotal(i){
@@ -195,7 +191,6 @@ export default function Gameboard({navigation, route}){
             setStatus('You have to throw dices first')
         }
     }
-
     //Muutetaan nopan väriä mustaksi, jos se on valitaan
     function getDiceColor(i){
         return selectedDices[i] ? "black":"steelblue"
@@ -204,46 +199,24 @@ export default function Gameboard({navigation, route}){
     function getDicePointsColor(i){
         return (selectedDicePoints[i]  && !gameEndStatus) ? "black":"steelblue"
     }
-    function startGameAgain (){
-        
-    }
+
+
 
     return(
         <>
             <Header/>
             <View style={styles.container}>
-                <MaterialCommunityIcons
-                    name={"dice-multiple"}
-                    key= {"dice-multiple"}
-                    size={70}
-                    color={'steelblue'}>
-                </MaterialCommunityIcons>
+                <Text>Gameboard</Text>
                 <Container fluid>
                     <Row>{dicesRow}</Row>
                 </Container>
                 <Text>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text> {status}</Text>
-                {!gameEndStatus ? 
                 <Pressable
                     style={styles.button}
                     onPress={()=>throwDices()}>
                     <Text>THROW DICES</Text>
                 </Pressable>
-                :<View style={styles.buttonGroup}>
-                <Pressable
-                  style={styles.button}
-                  onPress={() => throwDices()}>
-                  <Text>START GAME </Text>
-                </Pressable>
-                <Pressable
-                  style={styles.button}
-                  onPress={() => navigation.navigate('Scoreboard')}>
-                  <Text>GO SCOREBOARD</Text>
-                </Pressable>
-                </View>
-                }
-                <Text>Total: {totalPoints}</Text>
-                <Text>{bonusPointText}</Text>
                 <Container fluid>
                     <Row>{pointsRow}</Row>
                 </Container>

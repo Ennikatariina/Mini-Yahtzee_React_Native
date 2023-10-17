@@ -75,3 +75,27 @@ export default function Gameboard(){
         </View>
     )
 }
+
+
+
+
+
+
+
+const allPointsSelected = selectedPoints.every((pointSelected) => pointSelected);
+                console.log("allPoint "+allPointsSelected) 
+                if (allPointsSelected) {
+                // Kaikki pisteet ovat valittu
+                    setTimeout(()=>{setGameEndStatus(true)}, 0)
+                    console.log("GameEndStatus fumtiossa " +gameEndStatus)
+
+
+
+                    const allPointsSelected = selectedDicePoints.every((pointSelected) => pointSelected);
+        setTesti(allPointsSelected)
+        console.log("checkGameEndStatus" + allPointsSelected)
+        if (allPointsSelected) {
+            // Kaikki pisteet ovat valittu
+            setGameEndStatus(true);
+        }
+        console.log("checkGameEndStatus gameEndStatus "+ gameEndStatus)
