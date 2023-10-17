@@ -9,7 +9,6 @@ import { Container, Row, Col } from 'react-native-flex-grid';
 
 let board=[]
 
-
 export default function Gameboard({navigation, route}){
 
     const [playerName, setPlayerName]=useState('')
@@ -41,6 +40,7 @@ export default function Gameboard({navigation, route}){
     //Kun selectedDicePoints tila muuttuu, niin seuraavat toiminnot tehdään
     //Muunnmuassa laskee kokoispisteet ja pisteet boonuspisteisiin ja lisää +50 bonuspistettä.
     useEffect(()=>{
+        console.log("1 useEffect")
         setNbrOfThrowsLeft(NBR_OF_THROWS)
         selectedDices.fill(false)
         setStatus('Throw dices')
@@ -59,6 +59,7 @@ export default function Gameboard({navigation, route}){
         
         //Päivittää statuksen, kun gameEndStatuksen arvo on true ja gameEndStatukseen tulee muutos
     useEffect(() => {
+        console.log("2 useEffect")
         if (gameEndStatus) {
             setStatus("Game over")
             }
@@ -117,6 +118,7 @@ export default function Gameboard({navigation, route}){
     const selectDicePoints=(i)=>{
         //Jos heittoja ei ole jäljellä 
         if(nbrOfThrowsLeft===0){
+            console.log("Menee tänne111")
                 // Jotkut pisteet puuttuvat
                 let selectedPoints =[...selectedDicePoints] //tämän lista arvot false/true
                 let points =[...dicePointsTotal] 
@@ -148,7 +150,6 @@ export default function Gameboard({navigation, route}){
 
     //Heitetään noppaa
     const throwDices = () =>{
-        console.log("throwDices "+ nbrOfThrowsLeft + " "+ gameEndStatus )
         //3 heittoa mennyt, mutta peli ei ole loppu
         if (nbrOfThrowsLeft===0 && !gameEndStatus){
             setStatus('Select your points before the next throw')
@@ -205,8 +206,21 @@ export default function Gameboard({navigation, route}){
         return (selectedDicePoints[i]  && !gameEndStatus) ? "black":"steelblue"
     }
     function startGameAgain (){
-        
+
     }
+
+    const restartGame = () => {
+        // Aseta pelaajan nimi uudelleen, jos se on saatavilla
+        let nimi=''
+        if (route.params?.player) {
+           nimi= setPlayerName(route.params.player);
+        }
+        // Käynnistää sovelluksen uudelleen nollaten sen tilat ja näkymät
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Gameboard' }],
+        });
+      };
 
     return(
         <>
@@ -224,23 +238,23 @@ export default function Gameboard({navigation, route}){
                 <Text>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text> {status}</Text>
                 {!gameEndStatus ? 
-                <Pressable
+                    <Pressable
+                        style={styles.button}
+                        onPress={()=>throwDices()}>
+                        <Text>THROW DICES</Text>
+                    </Pressable>
+                    :<View style={styles.buttonGroup}>
+                    <Pressable
                     style={styles.button}
-                    onPress={()=>throwDices()}>
-                    <Text>THROW DICES</Text>
-                </Pressable>
-                :<View style={styles.buttonGroup}>
-                <Pressable
-                  style={styles.button}
-                  onPress={() => throwDices()}>
-                  <Text>START GAME </Text>
-                </Pressable>
-                <Pressable
-                  style={styles.button}
-                  onPress={() => navigation.navigate('Scoreboard')}>
-                  <Text>GO SCOREBOARD</Text>
-                </Pressable>
-                </View>
+                    onPress={restartGame}>
+                    <Text>START THE GAME AGAIN </Text>
+                    </Pressable>
+                    <Pressable
+                    style={styles.button}
+                    onPress={() => navigation.navigate('Scoreboard')}>
+                    <Text>GO SCOREBOARD</Text>
+                    </Pressable>
+                    </View>
                 }
                 <Text>Total: {totalPoints}</Text>
                 <Text>{bonusPointText}</Text>
