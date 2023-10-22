@@ -1,14 +1,16 @@
-import { Text, View, Pressable } from "react-native";
+import { Text, View, Pressable, ImageBackground } from "react-native";
 import { useState, useEffect } from "react";
 import {DataTable} from "react-native-paper"
 import Footer from './Footer';
 import Header from './Header';
-import style from "../style/style";
+import styles from "../style/style";
 import { NBR_SCOREBOARD_ROWS, SCOREBOARD_KEY } from "../constants/Game";
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native';
 
 export default Scoreboard = ({navigation}) =>{
 
+    const { navigate } = useNavigation();
     const [scores, setScores]= useState([])
 
     useEffect(() =>{
@@ -39,9 +41,15 @@ export default Scoreboard = ({navigation}) =>{
             console.log('clear error' + e)
         }
       }
-      console.log(scores)
+     
+      scores.sort((a, b) => b.points - a.points)
+      
     return(
         <>
+        <ImageBackground
+        source={require('../image/bokeh.jpg')}
+        style={styles.background}
+    >
             <Header/>
             <View>
                 <Text>Scoreboard</Text>
@@ -60,13 +68,16 @@ export default Scoreboard = ({navigation}) =>{
                     )) 
                  }
             </View>
-            <View>
+            <View style={styles.buttonGroup}>
                 <Pressable 
+                    style={styles.button}
                     onPress={()=>clearStorageBoard()}>
                     <Text>CLEAR SCOREBOARD</Text>
                 </Pressable>
+                
             </View>
             <Footer/>
+            </ImageBackground>
         </>
     )
 

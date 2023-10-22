@@ -1,5 +1,5 @@
 import { useState, useEffect} from "react";
-import { Text, View, Pressable } from "react-native";
+import { Text, View, Pressable, ImageBackground } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import styles from '../style/style'
 import Footer from './Footer';
@@ -7,6 +7,7 @@ import Header from './Header';
 import { NBR_OF_DICES, NBR_OF_THROWS, MIN_SPOT, MAX_SPOT, BONUS_POINTS_LIMIT, BONUS_POINTS, SCOREBOARD_KEY } from "../constants/Game";
 import { Container, Row, Col } from 'react-native-flex-grid';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 let board=[]
 
@@ -58,11 +59,16 @@ export default function Gameboard({navigation, route}){
             setTotalPoints(newTotalPoints)
             setBonusPointText(`Congrats! Bonus points (50) added`);
         }
+        const allPointsSelected = selectedDicePoints.every((pointSelected) => pointSelected);
+                    if (allPointsSelected) {
+                        setGameEndStatus(true)
+                    }
         },[selectedDicePoints])
         
         //Päivittää statuksen, kun gameEndStatuksen arvo on true ja gameEndStatukseen tulee muutos
     useEffect(() => {
         if (gameEndStatus) {
+            savePlayerPoints()
             setStatus("Game over")
             }
         },[gameEndStatus])
@@ -70,6 +76,7 @@ export default function Gameboard({navigation, route}){
     useEffect(() =>{
         const unsubscribe = navigation.addListener('focus',()=>{
             getScoreboardData()
+            
         })
         return unsubscribe
     },[navigation])
@@ -113,9 +120,9 @@ export default function Gameboard({navigation, route}){
                     onPress={()=>selectDicePoints(diceButton)}
                     >
                     <MaterialCommunityIcons
-                        name={"numeric-" +(diceButton + 1) + "-circle"}
+                        name={"dice-" +(diceButton + 1) + "-outline"}
                         key= {"buttonRow" + diceButton}
-                        size={35}
+                        size={45}
                         color={getDicePointsColor(diceButton)}
                         >
                     </MaterialCommunityIcons>
@@ -142,10 +149,6 @@ export default function Gameboard({navigation, route}){
                     setStatus('You already selected points for ' + (i+1))
                     return points[i]
                 }
-                const allPointsSelected = selectedPoints.every((pointSelected) => pointSelected);
-                    if (allPointsSelected) {
-                        setGameEndStatus(true)
-                    }
                 setDicePointsTotal(points)
                 setSelectedDicePoints(selectedPoints)
                 return points[i]   
@@ -209,11 +212,11 @@ export default function Gameboard({navigation, route}){
 
     //Muutetaan nopan väriä mustaksi, jos se on valitaan
     function getDiceColor(i){
-        return selectedDices[i] ? "black":"steelblue"
+        return selectedDices[i] ? "#372A31":"#658C64"
     }
 
     function getDicePointsColor(i){
-        return selectedDicePoints[i]  ? "black":"steelblue"
+        return selectedDicePoints[i]  ? "#372A31":"#658C64"
     }
     const restartGame = () => {
         setGameEndStatus(false)
@@ -226,9 +229,7 @@ export default function Gameboard({navigation, route}){
         selectedDices.fill(0)
         selectedDicePoints.fill(0)
         setBonusPointText(`You are ${BONUS_POINTS_LIMIT} points away from bonus`)
-
     }
-
   /*  const restartGame = () => {
         // Käynnistää sovelluksen uudelleen nollaten sen tilat ja näkymät
         navigation.reset({
@@ -270,56 +271,70 @@ export default function Gameboard({navigation, route}){
             console.log('Save error: ' + e)
         }
       }
-
+    
     return(
         <>
+            <ImageBackground
+            source={require('../image/bokeh.jpg')}
+            style={styles.background}
+        >
             <Header/>
-            <View style={styles.container}>
-                {iconView ?
-                <MaterialCommunityIcons
-                    name={"dice-multiple"}
-                    key= {"dice-multiple"}
-                    size={70}
-                    color={'steelblue'}>
-                </MaterialCommunityIcons>
-                :
-                <Container fluid>
-                    <Row>{dicesRow}</Row>
-                </Container>
-                }
-                <Text>Throws left: {nbrOfThrowsLeft}</Text>
-                <Text> {status}</Text>
-                {!gameEndStatus ? 
-                    <Pressable
+            <View style={styles.containerGameboard}>
+                <View style={styles.containerGameboard1}>
+                    {iconView ?
+                    <MaterialCommunityIcons
+                        name={"dice-multiple"}
+                        key= {"dice-multiple"}
+                        size={70}
+                        color={'steelblue'}>
+                    </MaterialCommunityIcons>
+                    :
+                    <Container fluid
+                        style={styles.testi}>
+                        <Row>{dicesRow}</Row>
+                    </Container>
+                    }
+                </View>
+                <View style={styles.containerGameboard1}>
+                    <Text style={styles.text}>Throws left: {nbrOfThrowsLeft}</Text>
+                    <Text style={styles.text}> {status}</Text>
+                    {!gameEndStatus ? 
+                        <Pressable
+                            style={styles.button}
+                            onPress={()=>throwDices()}>
+                            <Text style={styles.buttonText}>THROW DICES</Text>
+                        </Pressable>
+                        :<View style={styles.buttonGroup}>
+                        <Pressable
                         style={styles.button}
-                        onPress={()=>throwDices()}>
-                        <Text>THROW DICES</Text>
-                    </Pressable>
-                    :<View style={styles.buttonGroup}>
-                    <Pressable
-                    style={styles.button}
-                    onPress={restartGame}>
-                    <Text>START THE GAME AGAIN </Text>
-                    </Pressable>
-                    <Pressable
-                    style={styles.button}
-                    onPress={() => savePlayerPoints()}>
-                    <Text>GO SCOREBOARD</Text>
-                    </Pressable>
-                    </View>
-                }
-                <Text>Total: {totalPoints}</Text>
-                <Text>{bonusPointText}</Text>
-                <Container fluid>
-                    <Row>{pointsRow}</Row>
-                </Container>
-                <Container fluid>
-                    <Row>{pointsToSelectRow}</Row>
-                </Container>
-                <Text>Player: {playerName}</Text>
+                        onPress={restartGame}>
+                        <Text>START THE GAME AGAIN </Text>
+                        </Pressable>
+                        <Pressable
+                        style={styles.button}
+                        onPress={()=>navigation.navigate('Scoreboard')}>
+                        <Text>GO SCOREBOARD</Text>
+                        </Pressable>
+                        </View>
+                    }
+                    <Text style={styles.text}>Total: {totalPoints}</Text>
+                    <Text style={styles.text}>{bonusPointText}</Text>
+                </View>
+                <View style={styles.pointrow}>
+                    <Container fluid>
+                        <Row>{pointsRow}</Row>
+                    </Container>
+                    <Container fluid>
+                        <Row>{pointsToSelectRow}</Row>
+                    </Container>
+                </View>
+                <View style={styles.textPlayer}>
+                    <Text style={styles.text}>Player: {playerName}</Text>
+                </View>
             </View>
             <Footer/>
+            </ImageBackground>
         </>
+        
     )
 }
-//navigation.navigate('Scoreboard'

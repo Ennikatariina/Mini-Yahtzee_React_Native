@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { TextInput, Text, View, Pressable, Keyboard } from "react-native";
+import { TextInput, Text, View, Pressable, Keyboard, ImageBackground } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Footer from './Footer';
 import Header from './Header';
 import { NBR_OF_DICES, NBR_OF_THROWS, MIN_SPOT, MAX_SPOT, BONUS_POINTS_LIMIT, BONUS_POINTS } from "../constants/Game";
 import styles from '../style/style'
+
 
 export default Home =({navigation}) =>{
     const [playerName, setPlayerName]=useState('')
@@ -18,10 +19,14 @@ export default Home =({navigation}) =>{
     }
 
     return (
-        <>
+        <> 
+        <ImageBackground
+            source={require('../image/bokeh.jpg')}
+            style={styles.background}
+        >
             <Header/>
-            <View style={styles.container}>
-                <MaterialCommunityIcons name="information" size={90} color="steelblue"/>
+            <View style={styles.containerHome}>
+                <MaterialCommunityIcons name="information" size={90} color="#64738C"/>
                 {!hasPlayerName?
                 <>
                     <Text style={styles.gameinfo}> For scoreboard enter your name</Text>
@@ -60,7 +65,7 @@ export default Home =({navigation}) =>{
                     getting bonus which gives you {BONUS_POINTS}
                     points more.
                 </Text>
-                <Text style={styles.gameinfo}>Good luck, {playerName}</Text>
+                <Text style={styles.gameinfoPlayer}>Good luck, {playerName}</Text>
                 <Pressable
                     style={styles.button}
                     onPress={()=>navigation.navigate('Gameboard', {player: playerName})}>
@@ -69,9 +74,9 @@ export default Home =({navigation}) =>{
                 </Pressable>
                 </>
                 } 
-
             </View>
             <Footer/>
+            </ImageBackground>
         </>
     )
 }
