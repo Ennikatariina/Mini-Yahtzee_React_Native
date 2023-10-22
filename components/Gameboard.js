@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { Text, View, Pressable, Button } from "react-native";
+import { useState, useEffect} from "react";
+import { Text, View, Pressable } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import styles from '../style/style'
 import Footer from './Footer';
 import Header from './Header';
-import { NBR_OF_DICES, NBR_OF_THROWS, MIN_SPOT, MAX_SPOT, BONUS_POINTS_LIMIT, BONUS_POINTS } from "../constants/Game";
+import { NBR_OF_DICES, NBR_OF_THROWS, MIN_SPOT, MAX_SPOT, BONUS_POINTS_LIMIT, BONUS_POINTS, SCOREBOARD_KEY } from "../constants/Game";
 import { Container, Row, Col } from 'react-native-flex-grid';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 let board=[]
 
@@ -15,7 +16,7 @@ export default function Gameboard({navigation, route}){
     const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS)
     const [status, setStatus] =useState('Throw dices')
     const [gameEndStatus, setGameEndStatus]=useState(false)
-    //Ovatko nopat ovat kiinnitetty
+    //Ovatko nopat kiinnitetty
     const [selectedDices, setSelectedDices]=
         useState(new Array(NBR_OF_DICES).fill(false))
     //Noppien silmäluvut
@@ -29,6 +30,9 @@ export default function Gameboard({navigation, route}){
         useState(new Array(MAX_SPOT).fill(0))
     const [bonusPointText, setBonusPointText]=useState(`You are ${BONUS_POINTS_LIMIT} points away from bonus`)
     const[totalPoints, setTotalPoints]=useState(0)
+    const[iconView, setIconView] =useState(true)
+    //Tulostaulun pisteen
+    const[scores, setScores]=useState([])
 
     //Asetetaan nimi playerName tilaan, kun Gameboard renderoidaan ensimäisen kerran. 
     useEffect(()=>{
@@ -40,7 +44,6 @@ export default function Gameboard({navigation, route}){
     //Kun selectedDicePoints tila muuttuu, niin seuraavat toiminnot tehdään
     //Muunmuassa laskee kokonaispisteet ja pisteet bonuspisteisiin ja lisää +50 bonuspistettä.
     useEffect(()=>{
-        console.log("1 useEffect")
         setNbrOfThrowsLeft(NBR_OF_THROWS)
         selectedDices.fill(false)
         setStatus('Throw dices')
@@ -59,11 +62,17 @@ export default function Gameboard({navigation, route}){
         
         //Päivittää statuksen, kun gameEndStatuksen arvo on true ja gameEndStatukseen tulee muutos
     useEffect(() => {
-        console.log("2 useEffect")
         if (gameEndStatus) {
             setStatus("Game over")
             }
         },[gameEndStatus])
+    
+    useEffect(() =>{
+        const unsubscribe = navigation.addListener('focus',()=>{
+            getScoreboardData()
+        })
+        return unsubscribe
+    },[navigation])
 
     //Nopparivi 
     const dicesRow=[]
@@ -118,7 +127,6 @@ export default function Gameboard({navigation, route}){
     const selectDicePoints=(i)=>{
         //Jos heittoja ei ole jäljellä 
         if(nbrOfThrowsLeft===0){
-            console.log("Menee tänne111")
                 // Jotkut pisteet puuttuvat
                 let selectedPoints =[...selectedDicePoints] //tämän lista arvot false/true
                 let points =[...dicePointsTotal] 
@@ -150,6 +158,7 @@ export default function Gameboard({navigation, route}){
 
     //Heitetään noppaa
     const throwDices = () =>{
+        setIconView(false)
         //3 heittoa mennyt, mutta peli ei ole loppu
         if (nbrOfThrowsLeft===0 && !gameEndStatus){
             setStatus('Select your points before the next throw')
@@ -162,10 +171,8 @@ export default function Gameboard({navigation, route}){
             dicePointsTotal.fill(0) 
             setStatus("Game over")
         }
-        else if(nbrOfThrowsLeft===1){
-            setStatus("Select your points before next throw ")
-        }
         else{
+            
             let spots= [...diceSpots]
             for (let i=0; i<NBR_OF_DICES; i++){
                 //Heitetään niitä noppia, joilla selectedDices arvon on false, eli jos noppaa ei ole kiinnitetty
@@ -177,6 +184,9 @@ export default function Gameboard({navigation, route}){
             }
             setDiceSpots(spots)
             setStatus('Select and throw dices again')
+            if(nbrOfThrowsLeft===1){
+                setStatus("Select your points before next throw ")
+            }
         }
         setNbrOfThrowsLeft(nbrOfThrowsLeft-1)
     }
@@ -203,38 +213,80 @@ export default function Gameboard({navigation, route}){
     }
 
     function getDicePointsColor(i){
-        return (selectedDicePoints[i]  && !gameEndStatus) ? "black":"steelblue"
+        return selectedDicePoints[i]  ? "black":"steelblue"
     }
-    function startGameAgain (){
-
-    }
-
     const restartGame = () => {
-        // Aseta pelaajan nimi uudelleen, jos se on saatavilla
-        let nimi=''
-        if (route.params?.player) {
-           nimi= setPlayerName(route.params.player);
-        }
+        setGameEndStatus(false)
+        setStatus('Throw dices')
+        totalPointsCounter = 0
+        pointsMissing =0
+        diceSpots.fill(0) 
+        dicePointsTotal.fill(0)
+        setTotalPoints(0)
+        selectedDices.fill(0)
+        selectedDicePoints.fill(0)
+        setBonusPointText(`You are ${BONUS_POINTS_LIMIT} points away from bonus`)
+
+    }
+
+  /*  const restartGame = () => {
         // Käynnistää sovelluksen uudelleen nollaten sen tilat ja näkymät
         navigation.reset({
-          index: 0,
+          index: 1,
           routes: [{ name: 'Gameboard' }],
         });
-      };
+      }; */ 
+
+    const savePlayerPoints = async() => {
+        const newKey = scores.length + 1
+        const currentDate = new Date();
+        const playerPoints ={
+            key:newKey,
+            name:playerName,
+            date:currentDate.toLocaleDateString(),
+            time:currentDate.toLocaleTimeString(),
+            points: totalPoints
+        }
+        try{
+            const newScore =[...scores, playerPoints]
+            const jsonValue = JSON.stringify(newScore)
+            await AsyncStorage.setItem(SCOREBOARD_KEY, jsonValue)
+        }
+        catch(e){
+            console.log('Save error: ' + e)
+        }
+        console.log(playerPoints)
+      }
+
+      const getScoreboardData = async () =>{
+        try{
+            const jsonValue = await AsyncStorage.getItem(SCOREBOARD_KEY)
+            if (jsonValue !== null){
+                let tmpScores = JSON.parse(jsonValue)
+                setScores(tmpScores)
+            }
+        }
+        catch(e){
+            console.log('Save error: ' + e)
+        }
+      }
 
     return(
         <>
             <Header/>
             <View style={styles.container}>
+                {iconView ?
                 <MaterialCommunityIcons
                     name={"dice-multiple"}
                     key= {"dice-multiple"}
                     size={70}
                     color={'steelblue'}>
                 </MaterialCommunityIcons>
+                :
                 <Container fluid>
                     <Row>{dicesRow}</Row>
                 </Container>
+                }
                 <Text>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text> {status}</Text>
                 {!gameEndStatus ? 
@@ -251,7 +303,7 @@ export default function Gameboard({navigation, route}){
                     </Pressable>
                     <Pressable
                     style={styles.button}
-                    onPress={() => navigation.navigate('Scoreboard')}>
+                    onPress={() => savePlayerPoints()}>
                     <Text>GO SCOREBOARD</Text>
                     </Pressable>
                     </View>
@@ -270,3 +322,4 @@ export default function Gameboard({navigation, route}){
         </>
     )
 }
+//navigation.navigate('Scoreboard'
