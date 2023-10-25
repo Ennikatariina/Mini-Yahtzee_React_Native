@@ -20,7 +20,7 @@ export default Scoreboard = ({navigation}) =>{
         return unsubscribe
     },[navigation])
 
-    const getScoreboardData = async () =>{
+    const getScoreboardData = async () =>{        
         try{
             const jsonValue = await AsyncStorage.getItem(SCOREBOARD_KEY)
             if (jsonValue !== null){
@@ -31,7 +31,8 @@ export default Scoreboard = ({navigation}) =>{
         catch(e){
             console.log('Save error: ' + e)
         }
-      }
+    }
+
       const clearStorageBoard = async() =>{
         try{
             await AsyncStorage.clear()
@@ -41,40 +42,60 @@ export default Scoreboard = ({navigation}) =>{
             console.log('clear error' + e)
         }
       }
-     
       scores.sort((a, b) => b.points - a.points)
       
-    return(
+    return( 
         <>
         <ImageBackground
         source={require('../image/bokeh.jpg')}
         style={styles.background}
     >
             <Header/>
-            <View>
-                <Text>Scoreboard</Text>
-                {scores.length ===0 ?
-                    <Text>Scoreboard is empty</Text>
+            <View style={styles.containerGameScoreboard}>
+                <View >
+                    {scores.length ===0 ?
+                        <Text style={styles.text}>Scoreboard is empty</Text>
+                        :
+                        (
+                        <View style={styles.dataTableBox}>
+                        <DataTable>
+                            <DataTable.Header>
+                            <DataTable.Title> <Text style={styles.dataTableHeaderText}>Position </Text></DataTable.Title>
+                            <DataTable.Title> <Text style={styles.dataTableHeaderText}> Name</Text> </DataTable.Title>
+                            <DataTable.Title> <Text style={styles.dataTableHeaderText}> Date</Text></DataTable.Title>
+                            <DataTable.Title> <Text style={styles.dataTableHeaderText}> Time</Text></DataTable.Title>
+                            <DataTable.Title> <Text style={styles.dataTableHeaderText}> Points</Text></DataTable.Title>
+                            </DataTable.Header>
+                            {scores.map((player, index) => (
+                            index < NBR_SCOREBOARD_ROWS && 
+                                <View style={styles.dataTableRow}
+                                    key={player.key}>
+                                <DataTable.Row >
+                                <DataTable.Cell><Text style={styles.dataTableText}>{index + 1}.</Text></DataTable.Cell>
+                                <DataTable.Cell><Text style={styles.dataTableText}>{player.name}</Text></DataTable.Cell>
+                                <DataTable.Cell><Text style={styles.dataTableText}>{player.date}</Text></DataTable.Cell>
+                                <DataTable.Cell><Text style={styles.dataTableText}>{player.time}</Text></DataTable.Cell>
+                                <DataTable.Cell><Text style={styles.dataTableText}>{player.points}</Text></DataTable.Cell>
+                                </DataTable.Row>
+                                </View>
+                            
+                            ))}
+                        </DataTable>
+                        </View>
+                          )
+                    }
+                </View>
+                <View style={styles.containerGameboard1}>
+                    {scores.length ===0 ?
+                    null
                     :
-                    scores.map((player, index)=>(
-                        index < NBR_SCOREBOARD_ROWS &&
-                        <DataTable.Row key={player.key}>
-                            <DataTable.Cell><Text>{index + 1}.</Text></DataTable.Cell>
-                            <DataTable.Cell><Text>{player.name}</Text></DataTable.Cell>
-                            <DataTable.Cell><Text>{player.date}</Text></DataTable.Cell>
-                            <DataTable.Cell><Text>{player.time}</Text></DataTable.Cell>
-                            <DataTable.Cell><Text>{player.points}</Text></DataTable.Cell>
-                        </DataTable.Row>
-                    )) 
-                 }
-            </View>
-            <View style={styles.buttonGroup}>
-                <Pressable 
-                    style={styles.button}
-                    onPress={()=>clearStorageBoard()}>
-                    <Text>CLEAR SCOREBOARD</Text>
-                </Pressable>
-                
+                        <Pressable 
+                            style={styles.button}
+                            onPress={()=>clearStorageBoard()}>
+                            <Text style={styles.buttonText}>CLEAR SCOREBOARD</Text>
+                        </Pressable>
+                    }
+                </View>
             </View>
             <Footer/>
             </ImageBackground>

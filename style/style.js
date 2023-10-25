@@ -3,11 +3,13 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   containerHome:{
     flex:1,
-    alignItems:'center'
+    alignItems:'center',
+
   },
-  containerGameboard:{
+  containerGameScoreboard:{
     flex:1,
   },
+  
   header: {
     marginBottom: 15,
     backgroundColor: '#8C647A',
@@ -26,6 +28,7 @@ export default StyleSheet.create({
     fontSize: 23,
     textAlign: 'center',
     margin: 10,
+    fontFamily:'Roboto',
   },
   author: {
     color: '#fff',
@@ -34,6 +37,7 @@ export default StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     margin: 10,
+    fontFamily:'Roboto',
   },
   /* gameboard: {
     backgroundColor: '#fff',
@@ -47,15 +51,17 @@ export default StyleSheet.create({
     marginTop: 10,
     marginHorizontal:20,
     color: '#090909',
+    fontFamily:'Roboto',
     
   },
   gameinfoPlayer:{
     fontWeight:'bold',
     fontSize: 25,
     margin:10,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)', // Varjostuksen väri (musta, 75 % läpinäkyvä)
+    textShadowColor: 'rgba(0, 0, 0, 0.4)', // Varjostuksen väri (musta, 75 % läpinäkyvä)
     textShadowOffset: { width:1, height: 1 }, // Siirtymä (vaaka- ja pystysuunnassa)
-    textShadowRadius: 5, // Varjostuksen leveys
+    textShadowRadius: 4, // Varjostuksen leveys
+    fontFamily:'Roboto',
 
   },
   homeTitle:{
@@ -65,17 +71,12 @@ export default StyleSheet.create({
     fontSize: 30,
     marginTop: 10,
     fontWeight:'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)', // Varjostuksen väri (musta, 75 % läpinäkyvä)
+    textShadowColor: 'rgba(0, 0, 0, 0.4)', // Varjostuksen väri (musta, 75 % läpinäkyvä)
     textShadowOffset: { width:1, height: 1 }, // Siirtymä (vaaka- ja pystysuunnassa)
-    textShadowRadius: 5, // Varjostuksen leveys
+    textShadowRadius: 4, // Varjostuksen leveys
+    fontFamily:'Roboto',
+  
   },
-  /* row: {
-    marginTop: 20,
-    padding: 10
-  }, */
- /*  flex: {
-    flexDirection: "row"
-  }, */
   button: {
     margin: 30,
     flexDirection: "row",
@@ -85,10 +86,12 @@ export default StyleSheet.create({
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
+    
   },
   buttonText: {
     color:"#ffffff",
-    fontSize: 15
+    fontSize: 15,
+    fontFamily:'Roboto',
   },
   buttonGroup: {
     flexDirection: 'row', // Aseta komponentit vaakasuoraan riviin
@@ -102,13 +105,19 @@ export default StyleSheet.create({
     padding: 10,
     backgroundColor:'#F2D5E5',
     fontSize:20,
-    margin:20
+    margin:20,
+    fontFamily:'Roboto',
 
   },
   text:{
     color:'#010101',
     fontSize:20,
-    alignItems: 'center' 
+    alignItems: 'center',
+    fontFamily:'Roboto',
+    margin:8
+  },
+  textTotal:{
+    fontSize:30, 
   },
   background: {
     flex: 1,
@@ -123,10 +132,49 @@ export default StyleSheet.create({
   textPlayer:{
     alignItems: 'center',
     fontWeight:'bold',
-    margin:20
+    margin:20,
+    fontFamily:'Roboto',
   },
-  pointrow:{
-    margin:10
-  }
-
+  dataTableText: {
+    fontFamily:'Roboto',
+  },
+  dataTableHeaderText:{
+    fontFamily:'Roboto',
+    fontWeight:'bold'
+  },
+  dataTableBox:{
+    backgroundColor:'#f4dfeb',
+    margin: 10,
+    borderRadius:8,
+    ...Platform.select({
+      android: {
+        elevation: 5, // Android-varjo
+      },
+      ios: {
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },}),
+  },
+  dataTableRow:{
+    borderColor:'#d7bbcb',
+    borderTopWidth: 1,
+  },
+  pointsRowStyle:{
+    borderColor:'#d7bbcb',
+    borderWidth: 1,
+    borderRadius:8,
+    backgroundColor:'#f4dfeb', 
+    margin:3,
+    marginBottom:5,
+    marginTop:20
+  },
+  pointsRowTextStyle:{
+    textAlign:'center', 
+    textAlignVertical:'center',
+    marginBottom:8,
+    marginTop:8
+  },
+  
 });

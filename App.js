@@ -5,11 +5,20 @@ import { SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { NavigationContainer } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
 
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+
+    const [loaded] = useFonts({
+      Roboto : require('./fonts/RobotoCondensed-VariableFont_wght.ttf')
+    })
+    if(!loaded) {
+      return null
+    }
+
   return (
     <NavigationContainer>
       <Tab.Navigator

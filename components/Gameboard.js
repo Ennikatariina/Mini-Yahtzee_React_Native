@@ -69,7 +69,7 @@ export default function Gameboard({navigation, route}){
     useEffect(() => {
         if (gameEndStatus) {
             savePlayerPoints()
-            setStatus("Game over")
+            setStatus("Game over. All points selected")
             }
         },[gameEndStatus])
     
@@ -104,8 +104,10 @@ export default function Gameboard({navigation, route}){
     const pointsRow=[]
     for (let spot=0; spot< MAX_SPOT; spot++){
         pointsRow.push(
-            <Col key={"pointsRow" + spot}>
-                <Text key={"pointsRow" + spot}>
+            <Col key={"pointsRow" + spot}
+                style={styles.pointsRowStyle}>
+                <Text key={"pointsRow" + spot}
+                    style={styles.pointsRowTextStyle}>
                     {getSpotTotal(spot)}
                 </Text>
             </Col>
@@ -155,7 +157,7 @@ export default function Gameboard({navigation, route}){
         }
         //Heittoja on jäljellä
         else{
-            setStatus('Throw ' + NBR_OF_THROWS + ' times before setting points')
+            setStatus('Throw ' + nbrOfThrowsLeft + ' times before setting points')
         }    
     }
 
@@ -172,7 +174,7 @@ export default function Gameboard({navigation, route}){
             //setGameEndStatus(false) //asetetaan gameEndStatus falseksi
             diceSpots.fill(0) 
             dicePointsTotal.fill(0) 
-            setStatus("Game over")
+            setStatus("Game over. All points selected")
         }
         else{
             
@@ -229,6 +231,7 @@ export default function Gameboard({navigation, route}){
         selectedDices.fill(0)
         selectedDicePoints.fill(0)
         setBonusPointText(`You are ${BONUS_POINTS_LIMIT} points away from bonus`)
+        setIconView(true)
     }
   /*  const restartGame = () => {
         // Käynnistää sovelluksen uudelleen nollaten sen tilat ja näkymät
@@ -279,14 +282,14 @@ export default function Gameboard({navigation, route}){
             style={styles.background}
         >
             <Header/>
-            <View style={styles.containerGameboard}>
+            <View style={styles.containerGameScoreboard}>
                 <View style={styles.containerGameboard1}>
                     {iconView ?
                     <MaterialCommunityIcons
                         name={"dice-multiple"}
                         key= {"dice-multiple"}
                         size={70}
-                        color={'steelblue'}>
+                        color={'#658C64'}>
                     </MaterialCommunityIcons>
                     :
                     <Container fluid
@@ -308,19 +311,20 @@ export default function Gameboard({navigation, route}){
                         <Pressable
                         style={styles.button}
                         onPress={restartGame}>
-                        <Text>START THE GAME AGAIN </Text>
+                        <Text style={styles.buttonText}>START THE GAME AGAIN </Text>
                         </Pressable>
                         <Pressable
                         style={styles.button}
                         onPress={()=>navigation.navigate('Scoreboard')}>
-                        <Text>GO SCOREBOARD</Text>
+                        <Text style={styles.buttonText}>GO SCOREBOARD</Text>
                         </Pressable>
                         </View>
                     }
-                    <Text style={styles.text}>Total: {totalPoints}</Text>
+                    <Text style={[styles.text, styles.textTotal]}>Total: {totalPoints}</Text>
                     <Text style={styles.text}>{bonusPointText}</Text>
                 </View>
                 <View style={styles.pointrow}>
+                    
                     <Container fluid>
                         <Row>{pointsRow}</Row>
                     </Container>
